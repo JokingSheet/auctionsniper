@@ -18,12 +18,16 @@ final class AuctionScanner {
  private static final Map<String,Listing> BEST=new LinkedHashMap<>();
  private static final List<String> VIEW=new ArrayList<>();
  private static final Set<String> ALERTED=new HashSet<>();
+ private static final Pattern PRICE=Pattern.compile("(?i)(?:price|preis|kosten|buy\\s*now)\\s*[:=]?\\s*\\$?\\s*([0-9][0-9.,]*\\s*[kmb]?)");
+ private static final Pattern SPAWNER=Pattern.compile("(?i)(?:spawner\\s*type|mob|entity)\\s*[:=]\\s*(.+)");
+ private static final Pattern ENCHANT=Pattern.compile("(?i).*(?:protection|sharpness|efficiency|unbreaking|fortune|mending|silk touch|power|feather falling|thorns|schutz|schärfe|schaerfe|effizienz|haltbarkeit|glück|glueck|reparatur|behutsamkeit|stärke|staerke|federfall|dornen).*");
  private static String filter="";
  private static BigDecimal limit;
  private static boolean enchanted,alert;
- private static final Pattern PRICE=Pattern.compile("(?i)(?:price|preis|kosten|buy\\s*now)\\s*[:=]?\\s*\\$?\\s*([0-9][0-9.,]*\\s*[kmb]?)");
+
  static void captureVisibleMenu(Minecraft mc){
   if(mc.player==null||mc.screen==null||mc.player.containerMenu==mc.player.inventoryMenu)return;
+  if(!isAuctionScreen(mc.screen.getTitle().getString()))return;
   var menu=mc.player.containerMenu;
   for(int i=0;i<Math.max(0,menu.slots.size()-36);i++){
    ItemStack s=menu.slots.get(i).getItem(); if(s.isEmpty())continue;
@@ -33,13 +37,17 @@ final class AuctionScanner {
    checkAlert(mc,l);
   }
  }
+ static boolean isAuctionScreen(String title){
+  String t=title==null?"":title.toLowerCase(Locale.ROOT);
+  return t.matches(".*(?:auction|ah|market|markt|auktion|börse|boerse).*");
+ }
  private static Listing parse(ItemStack s){
   List<String> lore=new ArrayList<>(); ItemLore data=s.get(DataComponents.LORE);
   if(data!=null)for(Component c:data.lines())lore.add(c.getString().trim());
-  String ench=lore.stream().filter(x->x.matches("(?i).*(?:protection|sharpness|efficiency|unbreaking|fortune|mending|silk touch|power|feather falling|thorns).*"))
+  String ench=lore.stream().filter(x->ENCHANT.matcher(x).matches())
     .sorted(String.CASE_INSENSITIVE_ORDER).reduce((a,b)->a+";"+b).orElse("");
   String spawner="";
-  for(String x:lore){Matcher m=Pattern.compile("(?i)(?:spawner\\s*type|mob|entity)\\s*[:=]\\s*(.+)").matcher(x);
+  for(String x:lore){Matcher m=SPAWNER.matcher(x);
    if(m.find()&&!m.group(1).trim().equalsIgnoreCase("mob"))spawner=m.group(1).trim().toLowerCase(Locale.ROOT);}
   BigDecimal total=null;
   for(String x:lore){Matcher m=PRICE.matcher(x);if(m.find()){total=amount(m.group(1));if(total!=null)break;}}
@@ -62,7 +70,7 @@ final class AuctionScanner {
  }
  private static void checkAlert(Minecraft mc,Listing l){
   if(!alert||limit==null||l.unit()==null)return;
-  if(!filter.isBlank()&&!l.name().toLowerCase().contains(filter.toLowerCase())&&!l.id().toLowerCase().contains(filter.toLowerCase()))return;
+  if(!filter.isBlank()&&!l.name().toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT))&&!l.id().toLowerCase(Locale.ROOT).contains(filter.toLowerCase(Locale.ROOT)))return;
   if(enchanted!=!l.enchants().isBlank()||l.unit().compareTo(limit)>=0)return;
   String key=l.key()+"|"+l.total()+"|"+l.amount();
   if(ALERTED.add(key))mc.player.displayClientMessage(Component.literal("§6[Auction Sniper] §a"+l.name()+" x"+l.amount()+" §7"+l.price()),false);
