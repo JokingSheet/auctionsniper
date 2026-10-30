@@ -39,7 +39,7 @@ final class AuctionScanner {
  }
  static boolean isAuctionScreen(String title){
   String t=title==null?"":title.toLowerCase(Locale.ROOT);
-  return t.matches(".*(?:auction|ah|market|markt|auktion|börse|boerse).*");
+  return t.matches(".*(?:auction|market|markt|auktion|börse|boerse).*") || t.matches(".*\\bah\\b.*");
  }
  private static Listing parse(ItemStack s){
   List<String> lore=new ArrayList<>(); ItemLore data=s.get(DataComponents.LORE);
