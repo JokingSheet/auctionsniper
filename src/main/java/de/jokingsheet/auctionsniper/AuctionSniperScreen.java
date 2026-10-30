@@ -46,7 +46,8 @@ public final class AuctionSniperScreen extends Screen {
   int y=height/2+39;for(String s:AuctionScanner.view()){if(y>height-45)break;g.drawString(font,s.length()>100?s.substring(0,97)+"...":s,Math.max(8,width/2-220),y,0xdddddd);y+=12;}
   if(AuctionScanner.statsView().size()==1)g.drawCenteredString(font,"Noch keine Beobachtungen in den letzten 10 Minuten.",width/2,180,0xaaaaaa);
  }
- public void onClose(){AuctionScanner.configure(filter.getValue(),max.getValue(),ench,AuctionScanner.alert());super.onClose();}\n private List<String> findSuggestions(String typed){
+ public void onClose(){AuctionScanner.configure(filter.getValue(),max.getValue(),ench,AuctionScanner.alert());super.onClose();}
+ private List<String> findSuggestions(String typed){
   if(typed==null||typed.trim().length()<2)return List.of();
   String q=typed.trim().toLowerCase(Locale.ROOT);
   List<String> starts=new ArrayList<>(),contains=new ArrayList<>();
