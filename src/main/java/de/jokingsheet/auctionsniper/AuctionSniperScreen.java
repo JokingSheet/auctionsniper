@@ -24,9 +24,11 @@ public final class AuctionSniperScreen extends Screen {
   super.render(g,mx,my,d);
   g.drawCenteredString(font,title,width/2,20,0xffffff);
   g.drawString(font,"Item-Filter",width/2-145,49,0xaaaaaa);g.drawString(font,"Max. Stückpreis",width/2+5,49,0xaaaaaa);
-  g.drawString(font,"Vergleichsgruppen: "+AuctionScanner.count(),width/2-145,151,0xffffff);
-  int y=166;for(String s:AuctionScanner.view()){if(y>height-45)break;g.drawString(font,s.length()>100?s.substring(0,97)+"...":s,Math.max(8,width/2-220),y,0xdddddd);y+=12;}
-  if(AuctionScanner.view().isEmpty())g.drawCenteredString(font,"Noch keine Angebote erfasst.",width/2,180,0xaaaaaa);
+  g.drawString(font,"Statistik - letzte 10 Minuten (rollierend)",width/2-145,151,0x55ddff);
+  int sy=166;for(String s:AuctionScanner.statsView()){if(sy>height/2+12)break;g.drawString(font,s.length()>105?s.substring(0,102)+"...":s,Math.max(8,width/2-220),sy,0xffffff);sy+=12;}
+  g.drawString(font,"Alle bisher günstigsten Angebote:",width/2-145,height/2+24,0x55ddff);
+  int y=height/2+39;for(String s:AuctionScanner.view()){if(y>height-45)break;g.drawString(font,s.length()>100?s.substring(0,97)+"...":s,Math.max(8,width/2-220),y,0xdddddd);y+=12;}
+  if(AuctionScanner.statsView().size()==1)g.drawCenteredString(font,"Noch keine Beobachtungen in den letzten 10 Minuten.",width/2,180,0xaaaaaa);
  }
  public boolean isPauseScreen(){return false;}
 }
