@@ -18,7 +18,10 @@ public final class AuctionSniperScreen extends Screen {
   addRenderableWidget(Button.builder(Component.literal("Schließen"),b->onClose()).bounds(x-70,height-30,140,20).build());
  }
  public void render(GuiGraphics g,int mx,int my,float d){
-  renderBackground(g,mx,my,d);super.render(g,mx,my,d);
+  // Avoid Screen.renderBackground(): it applies the global blur and can crash
+  // when another screen hook has already applied blur during this frame.
+  g.fill(0,0,width,height,0xC0101010);
+  super.render(g,mx,my,d);
   g.drawCenteredString(font,title,width/2,20,0xffffff);
   g.drawString(font,"Item-Filter",width/2-145,49,0xaaaaaa);g.drawString(font,"Max. Stückpreis",width/2+5,49,0xaaaaaa);
   g.drawString(font,"Vergleichsgruppen: "+AuctionScanner.count(),width/2-145,151,0xffffff);
