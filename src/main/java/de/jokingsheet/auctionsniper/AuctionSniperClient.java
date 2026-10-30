@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFW;
 public final class AuctionSniperClient implements ClientModInitializer {
  private static KeyMapping open,toggle; private static boolean enabled=false,waiting=false; private static int waitTicks=0,nextScan=0;
  public void onInitializeClient(){
+  AuctionScanner.loadConfig(Minecraft.getInstance());
   var cat=KeyMapping.Category.register(Identifier.fromNamespaceAndPath("auctionsniper","main"));
   open=KeyBindingHelper.registerKeyBinding(new KeyMapping("key.auctionsniper.open",GLFW.GLFW_KEY_RIGHT_SHIFT,cat));
   toggle=KeyBindingHelper.registerKeyBinding(new KeyMapping("key.auctionsniper.toggle",GLFW.GLFW_KEY_UNKNOWN,cat));
