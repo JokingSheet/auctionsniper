@@ -3,6 +3,8 @@ package de.jokingsheet.auctionsniper;
 import java.math.*;
 import java.util.*;
 import java.util.regex.*;
+import java.nio.file.*;
+import java.io.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.component.DataComponents;
@@ -27,7 +29,30 @@ final class AuctionScanner {
  private static String filter="";
  private static BigDecimal limit;
  private static boolean enchanted,alert;
+ private static String limitText="";
+ private static Path configPath;
 
+ static void loadConfig(Minecraft mc){
+  configPath=mc.gameDirectory.toPath().resolve("config").resolve("auctionsniper.properties");
+  Properties p=new Properties();
+  try{
+   if(Files.exists(configPath))try(Reader reader=Files.newBufferedReader(configPath)){p.load(reader);}
+   filter=p.getProperty("filter","");
+   limitText=p.getProperty("maxPrice","");
+   enchanted=Boolean.parseBoolean(p.getProperty("enchanted","false"));
+   alert=Boolean.parseBoolean(p.getProperty("alert","false"));
+   limit=limitText.isBlank()?null:new BigDecimal(limitText.replace(",",".")); 
+  }catch(Exception e){limit=null;limitText="";}
+ }
+ static String filter(){return filter;}
+ static String limitText(){return limitText;}
+ static boolean enchanted(){return enchanted;}
+ private static void saveConfig(){
+  if(configPath==null)return;
+  Properties p=new Properties();p.setProperty("filter",filter);p.setProperty("maxPrice",limitText);
+  p.setProperty("enchanted",Boolean.toString(enchanted));p.setProperty("alert",Boolean.toString(alert));
+  try{Files.createDirectories(configPath.getParent());try(Writer w=Files.newBufferedWriter(configPath)){p.store(w,"Auction Sniper settings");}}catch(IOException ignored){}
+ }
  static void captureVisibleMenu(Minecraft mc){
   if(mc.player==null||mc.screen==null||mc.player.containerMenu==mc.player.inventoryMenu)return;
   if(!isAuctionScreen(mc.screen.getTitle().getString()))return;
@@ -80,9 +105,9 @@ final class AuctionScanner {
   if(ALERTED.add(key))mc.player.displayClientMessage(Component.literal("§6[Auction Sniper] §a"+l.name()+" x"+l.amount()+" §7"+l.price()),false);
  }
  static void configure(String f,String max,boolean e,boolean a){
-  filter=f==null?"":f.trim();enchanted=e;alert=a;
-  try{limit=max==null||max.isBlank()?null:new BigDecimal(max.replace(",","."));}catch(Exception ex){limit=null;}
-  ALERTED.clear();
+  filter=f==null?"":f.trim();enchanted=e;alert=a;limitText=max==null?"":max.trim();
+  try{limit=limitText.isBlank()?null:new BigDecimal(limitText.replace(",","."));}catch(Exception ex){limit=null;}
+  ALERTED.clear();saveConfig();
  }
  static boolean alert(){return alert;} static int count(){return BEST.size();}
  static List<String> view(){return List.copyOf(VIEW);}
