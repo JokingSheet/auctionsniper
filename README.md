@@ -1,14 +1,15 @@
 # Auction Sniper
 
-Client-side Fabric mod for Minecraft 1.21.11 / Java 21.
+Fabric Client-Mod für Minecraft 1.21.11 / Java 21.
 
-## Build
-Run `gradle build` with Java 21. GitHub Actions builds the JAR on every push to `main`; download it from the workflow run's Artifacts section.
+- Rechts-Shift öffnet das Menü.
+- Auto-Scan sendet /ah, liest das sichtbare Menü aus und schließt es nach 50 Ticks. Danach wartet er 20 Sekunden.
+- Preise werden aus Item-Lore-Zeilen mit Price, Preis, Kosten oder Buy Now gelesen.
+- k, m und b werden als Tausend, Million und Milliarde ausgewertet.
+- Stückpreis = Gesamtpreis / Stackgröße.
+- Vergleichsgruppen trennen Item-ID, erkannte Verzauberungs-Lore und Spawner-Typ; angezeigt wird je Gruppe das günstigste Angebot.
+- Preisalarm mit Itemfilter, maximalem Stückpreis und Auswahl MIT/OHNE erkannte Enchantments; Meldung im Chat, ohne Spam für dasselbe Listing.
+- Kein Auto-Buy und keine Klicks auf Kaufbuttons.
 
-## Current prototype
-- Right Shift opens the mod GUI.
-- GUI toggle enables/disables the 20-second auction-house command polling.
-- Captures visible listing item names and stack amounts from the open menu.
-
-## Important limitations
-This initial scaffold does **not** yet parse server-specific price tooltips, enchantment lore, spawner entity types, pagination, or price alerts. Those require reading the actual tooltip data exposed by the target server and verifying its menu behavior. It deliberately does not auto-buy or interact with purchase controls.
+## Grenzen
+Es werden nur Item-Lore-Daten ausgewertet, die der Server tatsächlich an den Client überträgt. Server-spezifische Tooltip-Komponenten außerhalb der Lore können fehlen. Enchantments werden anhand üblicher Lore-Bezeichnungen erkannt. Ein Spawner-Typ wird nur getrennt, wenn eine konkrete Lore-Zeile wie Spawner Type: zombie oder Mob: zombie existiert; allgemeines Type: mob reicht nicht. Es wird nur die sichtbare Seite erfasst; automatische Seitennavigation ist nicht aktiviert. Ein erfolgreicher Build ist kein Ingame-Test.
