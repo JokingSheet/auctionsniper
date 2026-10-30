@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "id": "auctionsniper",
+  "version": "${version}",
+  "name": "Auction Sniper",
+  "description": "Client-side auction house price monitor with configurable per-item alerts.",
+  "environment": "client",
+  "entrypoints": { "client": ["de.jokingsheet.auctionsniper.AuctionSniperClient"] },
+  "depends": {
+    "fabricloader": ">=0.18.1",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
