@@ -8,8 +8,8 @@ public final class AuctionSniperScreen extends Screen {
  public AuctionSniperScreen(){super(Component.literal("Auction Sniper"));}
  protected void init(){
   int x=width/2;
-  filter=new EditBox(font,x-145,62,140,20,Component.literal("Item"));filter.setHint(Component.literal("z.B. diamond"));
-  max=new EditBox(font,x+5,62,140,20,Component.literal("Preis"));max.setHint(Component.literal("Max. Stückpreis"));
+  ench=AuctionScanner.enchanted();\n  filter=new EditBox(font,x-145,62,140,20,Component.literal("Item"));filter.setValue(AuctionScanner.filter());filter.setHint(Component.literal("z.B. diamond"));
+  max=new EditBox(font,x+5,62,140,20,Component.literal("Preis"));max.setValue(AuctionScanner.limitText());max.setHint(Component.literal("Max. Stückpreis"));
   addRenderableWidget(filter);addRenderableWidget(max);
   addRenderableWidget(Button.builder(Component.literal("Alarm: "+(AuctionScanner.alert()?"AN":"AUS")),b->{AuctionScanner.configure(filter.getValue(),max.getValue(),ench,!AuctionScanner.alert());b.setMessage(Component.literal("Alarm: "+(AuctionScanner.alert()?"AN":"AUS")));}).bounds(x-145,91,140,20).build());
   addRenderableWidget(Button.builder(Component.literal("Variante: "+(ench?"MIT Enchants":"OHNE Enchants")),b->{ench=!ench;AuctionScanner.configure(filter.getValue(),max.getValue(),ench,AuctionScanner.alert());b.setMessage(Component.literal("Variante: "+(ench?"MIT Enchants":"OHNE Enchants")));}).bounds(x+5,91,140,20).build());
@@ -30,5 +30,5 @@ public final class AuctionSniperScreen extends Screen {
   int y=height/2+39;for(String s:AuctionScanner.view()){if(y>height-45)break;g.drawString(font,s.length()>100?s.substring(0,97)+"...":s,Math.max(8,width/2-220),y,0xdddddd);y+=12;}
   if(AuctionScanner.statsView().size()==1)g.drawCenteredString(font,"Noch keine Beobachtungen in den letzten 10 Minuten.",width/2,180,0xaaaaaa);
  }
- public boolean isPauseScreen(){return false;}
+ public void onClose(){AuctionScanner.configure(filter.getValue(),max.getValue(),ench,AuctionScanner.alert());super.onClose();}\n public boolean isPauseScreen(){return false;}
 }
