@@ -20,14 +20,20 @@ public final class AuctionSniperClient implements ClientModInitializer {
    if(waiting){
     waitTicks++;
     if(mc.screen!=null&&!(mc.screen instanceof AuctionSniperScreen)){
-     AuctionScanner.captureVisibleMenu(mc);
-     if(waitTicks>=50){mc.setScreen(null);waiting=false;nextScan=20*20;}
+     String title=mc.screen.getTitle().getString();
+     if(AuctionScanner.isAuctionScreen(title)){
+      AuctionScanner.captureVisibleMenu(mc);
+      if(waitTicks>=50){mc.setScreen(null);waiting=false;nextScan=20*20;}
+     }else if(waitTicks>100){
+      // Leave unknown screens open; never close an unrelated inventory or menu.
+      waiting=false;nextScan=20*20;
+     }
     }else if(waitTicks>100){waiting=false;nextScan=20*20;}
     return;
    }
    if(nextScan>0)nextScan--;
    if(nextScan<=0&&mc.screen==null){mc.player.connection.sendCommand("ah");waiting=true;waitTicks=0;}
-   if(mc.screen!=null)AuctionScanner.captureVisibleMenu(mc);
+   if(mc.screen!=null&&!(mc.screen instanceof AuctionSniperScreen))AuctionScanner.captureVisibleMenu(mc);
   });
  }
  private static void setEnabled(boolean v,Minecraft mc){enabled=v;nextScan=0;if(!v)waiting=false;if(mc.player!=null)mc.player.displayClientMessage(Component.literal("Auction Sniper: "+(v?"§aAN":"§cAUS")),true);}
