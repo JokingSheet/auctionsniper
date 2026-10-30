@@ -2,6 +2,7 @@ package de.jokingsheet.auctionsniper;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.*;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.Item;
@@ -62,8 +63,9 @@ public final class AuctionSniperScreen extends Screen {
   return starts.stream().distinct().limit(5).toList();
  }
  @Override
- public boolean mouseClicked(double mx,double my,int button){
-  if(button==0&&!suggestions.isEmpty()){
+ public boolean mouseClicked(MouseButtonEvent event,boolean doubleClick){
+  double mx=event.x(),my=event.y();
+  if(event.button()==0&&!suggestions.isEmpty()){
    for(int i=0;i<suggestions.size();i++){
     int yy=suggestionY+i*14;
     if(mx>=suggestionX&&mx<=suggestionX+140&&my>=yy&&my<=yy+14){
@@ -74,7 +76,7 @@ public final class AuctionSniperScreen extends Screen {
     }
    }
   }
-  return super.mouseClicked(mx,my,button);
+  return super.mouseClicked(event,doubleClick);
  }
  public boolean isPauseScreen(){return false;}
 }
