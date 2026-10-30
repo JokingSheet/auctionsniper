@@ -18,6 +18,9 @@ final class AuctionScanner {
  private static final Map<String,Listing> BEST=new LinkedHashMap<>();
  private static final List<String> VIEW=new ArrayList<>();
  private static final Set<String> ALERTED=new HashSet<>();
+ private record Observation(long time,Listing listing) {}
+ private static final Deque<Observation> HISTORY=new ArrayDeque<>();
+ private static final long HISTORY_WINDOW_MS=10*60*1000L;
  private static final Pattern PRICE=Pattern.compile("(?i)(?:price|preis|kosten|buy\\s*now)\\s*[:=]?\\s*\\$?\\s*([0-9][0-9.,]*\\s*[kmb]?)");
  private static final Pattern SPAWNER=Pattern.compile("(?i)(?:spawner\\s*type|mob|entity)\\s*[:=]\\s*(.+)");
  private static final Pattern ENCHANT=Pattern.compile("(?i).*(?:protection|sharpness|efficiency|unbreaking|fortune|mending|silk touch|power|feather falling|thorns|schutz|schärfe|schaerfe|effizienz|haltbarkeit|glück|glueck|reparatur|behutsamkeit|stärke|staerke|federfall|dornen).*");
@@ -32,6 +35,7 @@ final class AuctionScanner {
   for(int i=0;i<Math.max(0,menu.slots.size()-36);i++){
    ItemStack s=menu.slots.get(i).getItem(); if(s.isEmpty())continue;
    Listing l=parse(s); if(l==null)continue;
+   recordObservation(l);
    Listing old=BEST.get(l.key());
    if(old==null||(l.unit()!=null&&(old.unit()==null||l.unit().compareTo(old.unit())<0))) {BEST.put(l.key(),l); rebuild();}
    checkAlert(mc,l);
@@ -82,7 +86,22 @@ final class AuctionScanner {
  }
  static boolean alert(){return alert;} static int count(){return BEST.size();}
  static List<String> view(){return List.copyOf(VIEW);}
- static void clear(){BEST.clear();VIEW.clear();ALERTED.clear();}
+ static void clear(){BEST.clear();VIEW.clear();ALERTED.clear();HISTORY.clear();}
+ static List<String> statsView(){
+  purgeHistory();
+  Map<String,Listing> cheapest=new LinkedHashMap<>();
+  for(Observation o:HISTORY){
+   Listing l=o.listing(); Listing prior=cheapest.get(l.key());
+   if(prior==null||(l.unit()!=null&&(prior.unit()==null||l.unit().compareTo(prior.unit())<0)))cheapest.put(l.key(),l);
+  }
+  List<String> out=new ArrayList<>();
+  out.add("Beobachtungen: "+HISTORY.size()+" | Gruppen: "+cheapest.size());
+  cheapest.values().stream().sorted(Comparator.comparing(Listing::unit,Comparator.nullsLast(Comparator.naturalOrder())))
+   .forEach(l->out.add(l.name()+" x"+l.amount()+" | Tiefstpreis: "+l.price()));
+  return out;
+ }
+ private static void recordObservation(Listing l){purgeHistory();HISTORY.addLast(new Observation(System.currentTimeMillis(),l));}
+ private static void purgeHistory(){long cutoff=System.currentTimeMillis()-HISTORY_WINDOW_MS;while(!HISTORY.isEmpty()&&HISTORY.peekFirst().time()<cutoff)HISTORY.removeFirst();}
  private static void rebuild(){
   VIEW.clear();BEST.values().stream().sorted(Comparator.comparing(Listing::unit,Comparator.nullsLast(Comparator.naturalOrder())))
    .forEach(l->VIEW.add(l.name()+" x"+l.amount()+" | "+l.price()+(l.enchants().isBlank()?" | ohne Enchants":" | "+l.enchants())+(l.spawner().isBlank()?"":" | Spawner: "+l.spawner())));
